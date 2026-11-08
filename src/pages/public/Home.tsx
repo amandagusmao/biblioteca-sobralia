@@ -64,7 +64,7 @@ export default function Home() {
       </section>
 
       {/* SERVIÇOS */}
-      <section className="mx-auto -mt-8 max-w-6xl px-4">
+      <section className="relative z-10 mx-auto -mt-8 max-w-6xl px-4">
         <div className="grid gap-4 md:grid-cols-3">
           {[
             { icon: <BookOpen className="size-6" />, t: 'Empréstimo de livros', d: `Crie sua conta, receba a carteirinha na hora e leve até ${cfg.max_emprestimos} livros por ${cfg.prazo_dias} dias.`, to: '/acervo', c: 'Ver acervo' },

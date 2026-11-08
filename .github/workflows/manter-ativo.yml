@@ -19,6 +19,5 @@ jobs:
       - name: Consulta leve ao Supabase
         run: |
           curl -sf "${{ secrets.SUPABASE_URL }}/rest/v1/configuracoes?select=id" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" > /dev/null
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" > /dev/null
           echo "Banco ativo ✔"

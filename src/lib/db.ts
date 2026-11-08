@@ -10,8 +10,12 @@ import { errMsg, uid } from './utils'
 export const adapter: DataAdapter = DEMO_MODE ? createLocalAdapter() : createSupabaseAdapter()
 
 // ---------- cache + avisos de mudança ----------
-const cache = new Map<TableName, unknown[]>()
+// O cache evita consultas repetidas, mas expira: mudanças feitas em OUTRO aparelho
+// (ex.: empréstimo registrado no balcão) aparecem ao trocar de página ou voltar à aba.
+const cache = new Map<TableName, { rows: unknown[]; at: number }>()
 const subs = new Map<TableName, Set<() => void>>()
+const VALIDADE_MS = 20_000 // ao abrir uma página, dados com mais de 20 s são reconsultados
+const VALIDADE_FOCO_MS = 5_000 // ao voltar para a aba/app
 
 // Gatilhos do banco também alteram outras tabelas
 const RELATED: Partial<Record<TableName, TableName[]>> = {
@@ -27,11 +31,35 @@ function fetchTable(t: TableName): Promise<unknown[]> {
   let p = inflight.get(t)
   if (!p) {
     p = adapter.list(t)
-      .then(rows => { if (inflight.get(t) === p) cache.set(t, rows); return rows as unknown[] })
+      .then(rows => {
+        if (inflight.get(t) === p) {
+          cache.set(t, { rows, at: Date.now() })
+          inflight.delete(t)
+          subs.get(t)?.forEach(fn => fn())
+        }
+        return rows as unknown[]
+      })
       .finally(() => { if (inflight.get(t) === p) inflight.delete(t) })
     inflight.set(t, p)
   }
   return p
+}
+
+/** Reconsulta em segundo plano, mantendo os dados atuais na tela enquanto isso. */
+function revalidar(t: TableName, validade: number) {
+  const c = cache.get(t)
+  if (c && Date.now() - c.at < validade) return
+  if (!inflight.has(t)) fetchTable(t).catch(() => { /* mantém os dados anteriores */ })
+}
+
+// Ao voltar para a aba (ou desbloquear o celular), atualiza o que estiver na tela.
+if (typeof document !== 'undefined') {
+  const aoVoltar = () => {
+    if (document.visibilityState !== 'visible') return
+    for (const [t, set] of subs) if (set.size) revalidar(t, VALIDADE_FOCO_MS)
+  }
+  document.addEventListener('visibilitychange', aoVoltar)
+  window.addEventListener('focus', aoVoltar)
 }
 
 function notify(t: TableName) {
@@ -73,20 +101,21 @@ export const db = {
 }
 
 export function useTable<K extends TableName>(t: K) {
-  const [data, setData] = useState<Row<K>[]>(() => (cache.get(t) as Row<K>[]) ?? [])
+  const [data, setData] = useState<Row<K>[]>(() => (cache.get(t)?.rows as Row<K>[]) ?? [])
   const [loading, setLoading] = useState(!cache.has(t))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
     const load = () => {
-      const cached = cache.get(t) as Row<K>[] | undefined
-      if (cached) { setData(cached); setLoading(false); return }
+      const cached = cache.get(t)
+      if (cached) { if (alive) { setData(cached.rows as Row<K>[]); setError(null); setLoading(false) } return }
       fetchTable(t)
         .then(rows => { if (alive) { setData(rows as Row<K>[]); setError(null); setLoading(false) } })
         .catch(e => { if (alive) { setError(errMsg(e)); setLoading(false) } })
     }
     load()
+    revalidar(t, VALIDADE_MS)
     let set = subs.get(t)
     if (!set) subs.set(t, (set = new Set()))
     set.add(load)

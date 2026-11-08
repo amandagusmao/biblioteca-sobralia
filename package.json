@@ -1,0 +1,35 @@
+{
+  "name": "biblioteca-digital-sobralia",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sistema da Biblioteca Digital de Sobrália/MG — acervo, empréstimos, cursos de informática e computadores.",
+  "scripts": {
+    "dev": "vite",
+    "celular": "vite --mode celular",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
+    "barcode-detector": "^3.2.3",
+    "lucide-react": "^1.70.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6",
+    "zxing-wasm": "^3.1.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5"
+  }
+}

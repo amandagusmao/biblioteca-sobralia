@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* Paleta inspirada na identidade da Prefeitura de Sobrália */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-electric: #0511f2;
+  --color-royal: #0339a6;
+  --color-ocean: #034c8c;
+  --color-navy: #06204a;
+  --color-leaf: #7cbf17;
+  --color-leaf-dark: #5e9410;
+  --color-ink: #0d0d0d;
+  --color-paper: #f5f7fc;
+}
+
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-electric) 55%, transparent); outline-offset: 2px; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(.98) } to { opacity: 1; transform: none } }
+@keyframes scan-line { 0%, 100% { top: 12% } 50% { top: 84% } }
+.animate-fade-in { animation: fade-in .18s ease-out; }
+.animate-pop-in { animation: pop-in .22s cubic-bezier(.2,.9,.3,1.2); }
+.scan-line { animation: scan-line 2.2s ease-in-out infinite; }
+
+/* Campos de data/hora no iPhone: altura e alinhamento corretos */
+input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; min-height: 2.75rem; display: block; }
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: left; }
+body { overflow-x: clip; }
+
+/* Impressão de carteirinhas e etiquetas */
+@media print {
+  body * { visibility: hidden !important; }
+  .print-area, .print-area * { visibility: visible !important; }
+  .print-area { position: absolute; inset: 0 auto auto 0; }
+  .no-print { display: none !important; }
+  @page { margin: 12mm; }
+}
